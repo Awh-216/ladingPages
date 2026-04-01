@@ -44,7 +44,7 @@
       </div>
       <div class="mobile-menu-meta">
         <span>Mobile Experience</span>
-        <small>Tap a section and the layout folds back into place.</small>
+        <small>Chọn một mục để chuyển nhanh đến phần bạn muốn xem.</small>
       </div>
     </aside>
 
@@ -58,7 +58,7 @@
             <p class="hero-description">{{ activeBrand.heroDescription }}</p>
             <div class="hero-actions">
               <button class="primary-btn" type="button" @click="scrollToSection(activeBrand.storyId)">Explore {{ activeBrand.label }}</button>
-              <button class="ghost-btn" type="button" @click="scrollToSection('stories-intro')">See Story Flow</button>
+              <button class="ghost-btn" type="button" @click="scrollToSection('stories-intro')">View Gallery</button>
             </div>
             <div class="hero-facts">
               <div v-for="fact in activeBrand.facts" :key="fact.label" class="fact-card">
@@ -78,12 +78,29 @@
             <div class="hero-glass-card hero-glass-top">{{ activeBrand.topTag }}</div>
             <div class="hero-glass-card hero-glass-bottom">{{ activeBrand.bottomTag }}</div>
             <img
-              class="hero-float hero-float-back"
+              class="hero-float hero-float-back interactive-media"
               :class="{ 'vertical-orient-detail': activeBrand.isVertical }"
               :src="activeBrand.heroDetailImage"
               :alt="`${activeBrand.label} detail`"
+              role="button"
+              tabindex="0"
+              :aria-label="`View ${activeBrand.label} detail image`"
+              @click="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
+              @keydown.enter.prevent="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
+              @keydown.space.prevent="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
             />
-            <img class="hero-car" :class="{ 'vertical-orient': activeBrand.isVertical }" :src="activeBrand.heroImage" :alt="activeBrand.imageAlt" />
+            <img
+              class="hero-car interactive-media"
+              :class="{ 'vertical-orient': activeBrand.isVertical }"
+              :src="activeBrand.heroImage"
+              :alt="activeBrand.imageAlt"
+              role="button"
+              tabindex="0"
+              :aria-label="`View ${activeBrand.imageAlt}`"
+              @click="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
+              @keydown.enter.prevent="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
+              @keydown.space.prevent="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
+            />
             <div class="hero-stat hero-stat-left">
               <strong>{{ activeBrand.statTitle }}</strong>
               <span>{{ activeBrand.statText }}</span>
@@ -143,7 +160,7 @@
             <span v-for="spec in story.specs" :key="spec" class="spec-chip">{{ spec }}</span>
           </div>
           <button class="text-btn" type="button" @click="scrollToSection(nextSection(index))">
-            {{ index === stories.length - 1 ? 'Move to final CTA' : 'Scroll to next chapter' }}
+            {{ index === stories.length - 1 ? 'Go to contact' : 'Next chapter' }}
           </button>
         </article>
 
@@ -151,10 +168,26 @@
           <div class="story-media-shell tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
             <div class="story-light"></div>
             <div class="story-number">{{ story.serial }}</div>
-            <div class="story-frame secondary">
+            <div
+              class="story-frame secondary interactive-frame"
+              role="button"
+              tabindex="0"
+              :aria-label="`View ${story.brand} detail image`"
+              @click="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
+              @keydown.enter.prevent="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
+              @keydown.space.prevent="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
+            >
               <img :class="{ 'vertical-orient-story': story.isVertical }" :src="story.secondaryImage" :alt="`${story.brand} detail`" />
             </div>
-            <div class="story-frame primary">
+            <div
+              class="story-frame primary interactive-frame"
+              role="button"
+              tabindex="0"
+              :aria-label="`View ${story.brand} ${story.model}`"
+              @click="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
+              @keydown.enter.prevent="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
+              @keydown.space.prevent="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
+            >
               <img :class="{ 'vertical-orient-story': story.isVertical }" :src="story.image" :alt="`${story.brand} ${story.model}`" />
             </div>
             <div class="story-caption">
@@ -169,25 +202,26 @@
     <section id="reserve" class="closing-panel tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
       <div class="closing-copy">
         <p class="eyebrow">Contact</p>
-        <p class="contact-kicker">A more editorial and Western-inspired closing section.</p>
-        <h2 class="contact-display">Premium landing pages, refined to the last section.</h2>
+        <p class="contact-kicker">Unique, creative UI design and front-end development, shaped around real brand goals.</p>
+        <h2 class="contact-display">Open to projects involving landing pages, websites, portfolios, and product-focused marketing sites.</h2>
         <p class="contact-lede">
-          Need a cleaner layout, sharper storytelling, or a premium final pass? We can move quickly and keep the
-          handoff clean.
+          If you need a website that feels polished, clear, and aligned with your brand, I can take it from concept
+          to final build.
         </p>
         <div class="contact-tags" aria-label="Service details">
           <span>Freelance projects</span>
           <span>Remote worldwide</span>
           <span>Fast revision flow</span>
         </div>
-        <h2 class="contact-heading">Liên hệ</h2>
+        <h2 class="contact-heading">Get in touch</h2>
         <p class="contact-intro">
-          Nếu bạn muốn trao đổi thêm về dự án, triển khai landing page hoặc cần mình hỗ trợ chỉnh sửa tiếp, hãy liên hệ qua các kênh bên dưới.
+          If you want to discuss a project, build a new landing page, or refine an existing one, feel free to reach
+          out through the channels below.
         </p>
-        <h2>Homepage giờ đã có đúng tinh thần premium, sáng tạo và cuộn dọc theo storytelling.</h2>
+        <h2>Strong structure, memorable visuals, and a smooth reading flow are always part of the process.</h2>
         <p>
-          Nếu muốn, mình có thể đi tiếp bước sau như thay nội dung thật cho từng mẫu xe, đồng bộ với đúng
-          nhận diện thương hiệu, hoặc nâng hiệu ứng lên WebGL/canvas cho chiều sâu mạnh hơn nữa.
+          I can also help replace placeholder content, align the page with your brand system, or push the motion
+          layer further with richer interactions.
         </p>
       </div>
       <div class="contact-layout">
@@ -246,6 +280,22 @@
       </div>
     </section>
     </div>
+
+    <Transition name="lightbox-fade">
+      <div v-if="selectedImage" class="image-lightbox" role="dialog" aria-modal="true" :aria-label="selectedImage.title">
+        <button class="image-lightbox-backdrop" type="button" aria-label="Close image viewer" @click="closeImageViewer"></button>
+        <div class="image-lightbox-panel">
+          <button class="image-lightbox-close" type="button" @click="closeImageViewer">Close</button>
+          <figure class="image-lightbox-figure">
+            <img class="image-lightbox-image" :src="selectedImage.src" :alt="selectedImage.alt" />
+            <figcaption class="image-lightbox-caption">
+              <strong>{{ selectedImage.title }}</strong>
+              <span>{{ selectedImage.meta }}</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </Transition>
   </main>
 </template>
 
@@ -262,6 +312,7 @@ const siteNav = ref(null)
 const heroCard = ref(null)
 const storySections = ref([])
 const isMobileMenuOpen = ref(false)
+const selectedImage = ref(null)
 
 const asset = (path) => `${import.meta.env.BASE_URL}${path}`
 
@@ -498,6 +549,7 @@ let lenisScrollHandler
 let gsapTicker
 let pointerHandler
 let resizeHandler
+let keydownHandler
 
 const getNavOffset = () => (siteNav.value?.offsetHeight ?? 82) + 28
 
@@ -527,6 +579,14 @@ const toggleMobileMenu = () => {
 
 const selectBrand = (brandId) => {
   activeBrandId.value = brandId
+}
+
+const openImageViewer = (image) => {
+  selectedImage.value = image
+}
+
+const closeImageViewer = () => {
+  selectedImage.value = null
 }
 
 const navigateToSection = (id) => {
@@ -682,29 +742,42 @@ const initAnimations = () => {
   })
 }
 
+const syncLockedUiState = () => {
+  const shouldLock = isMobileMenuOpen.value || Boolean(selectedImage.value)
+  if (lenis) {
+    if (shouldLock) lenis.stop()
+    else lenis.start()
+  }
+  document.body.style.overflow = shouldLock ? 'hidden' : ''
+}
+
 onMounted(async () => {
   await nextTick()
   initLenis()
   initAmbientPointer()
   initAnimations()
+  keydownHandler = (event) => {
+    if (event.key !== 'Escape') return
+    if (selectedImage.value) {
+      closeImageViewer()
+      return
+    }
+    if (isMobileMenuOpen.value) closeMobileMenu()
+  }
   resizeHandler = () => {
     if (!isMobileViewport()) closeMobileMenu()
     ScrollTrigger.refresh()
   }
+  window.addEventListener('keydown', keydownHandler)
   window.addEventListener('resize', resizeHandler)
   setTimeout(() => ScrollTrigger.refresh(), 250)
 })
 
-watch(isMobileMenuOpen, (open) => {
-  if (lenis) {
-    if (open) lenis.stop()
-    else lenis.start()
-  }
-  document.body.style.overflow = open ? 'hidden' : ''
-})
+watch([isMobileMenuOpen, selectedImage], syncLockedUiState)
 
 onUnmounted(() => {
   main.value?.removeEventListener('pointermove', pointerHandler)
+  window.removeEventListener('keydown', keydownHandler)
   window.removeEventListener('resize', resizeHandler)
   ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
   if (lenis && lenisScrollHandler) lenis.off('scroll', lenisScrollHandler)

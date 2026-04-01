@@ -23,7 +23,15 @@
         <button type="button" @click="navigateToSection(stories[2].id)">Stories</button>
         <button type="button" @click="navigateToSection('reserve')">Contact</button>
       </nav>
-      <button class="nav-cta" type="button" @click="navigateToSection('reserve')">Schedule Visit</button>
+      <div class="nav-actions">
+        <button class="theme-toggle" type="button" :aria-pressed="isDarkMode" :aria-label="themeButtonLabel" @click="toggleTheme">
+          <span class="theme-toggle-track" aria-hidden="true">
+            <span class="theme-toggle-thumb"></span>
+          </span>
+          <span>{{ isDarkMode ? 'Light' : 'Dark' }}</span>
+        </button>
+        <button class="nav-cta" type="button" @click="navigateToSection('reserve')">Schedule Visit</button>
+      </div>
     </header>
 
     <button
@@ -42,243 +50,239 @@
         <button type="button" @click="navigateToSection(stories[2].id)">Featured Stories</button>
         <button type="button" @click="navigateToSection('reserve')">Contact Studio</button>
       </div>
-      <div class="mobile-menu-meta">
-        <span>Mobile Experience</span>
-        <small>Chọn một mục để chuyển nhanh đến phần bạn muốn xem.</small>
-      </div>
     </aside>
 
     <div class="page-content">
-    <section id="hero" ref="heroCard" class="hero-card tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
-      <div class="hero-copy">
-        <Transition name="swap-fade" mode="out-in">
-          <div :key="activeBrand.id" class="hero-copy-panel">
-            <p class="eyebrow">{{ activeBrand.eyebrow }}</p>
-            <h1 class="hero-title">{{ activeBrand.heroTitle }}</h1>
-            <p class="hero-description">{{ activeBrand.heroDescription }}</p>
-            <div class="hero-actions">
-              <button class="primary-btn" type="button" @click="scrollToSection(activeBrand.storyId)">Explore {{ activeBrand.label }}</button>
-              <button class="ghost-btn" type="button" @click="scrollToSection('stories-intro')">View Gallery</button>
+      <section id="hero" ref="heroCard" class="hero-card tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
+        <div class="hero-copy">
+          <Transition name="swap-fade" mode="out-in">
+            <div :key="activeBrand.id" class="hero-copy-panel">
+              <p class="eyebrow">{{ activeBrand.eyebrow }}</p>
+              <h1 class="hero-title">{{ activeBrand.heroTitle }}</h1>
+              <p class="hero-description">{{ activeBrand.heroDescription }}</p>
+              <div class="hero-actions">
+                <button class="primary-btn" type="button" @click="scrollToSection(activeBrand.storyId)">Explore {{ activeBrand.label }}</button>
+                <button class="ghost-btn" type="button" @click="scrollToSection('stories-intro')">View Gallery</button>
+              </div>
+              <div class="hero-facts">
+                <div v-for="fact in activeBrand.facts" :key="fact.label" class="fact-card">
+                  <strong>{{ fact.value }}</strong>
+                  <span>{{ fact.label }}</span>
+                </div>
+              </div>
             </div>
-            <div class="hero-facts">
-              <div v-for="fact in activeBrand.facts" :key="fact.label" class="fact-card">
-                <strong>{{ fact.value }}</strong>
-                <span>{{ fact.label }}</span>
+          </Transition>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-ring ring-one"></div>
+          <div class="hero-ring ring-two"></div>
+          <Transition name="swap-fade" mode="out-in">
+            <div :key="`${activeBrand.id}-visual`" class="hero-visual-panel">
+              <div class="hero-glass-card hero-glass-top">{{ activeBrand.topTag }}</div>
+              <div class="hero-glass-card hero-glass-bottom">{{ activeBrand.bottomTag }}</div>
+              <img
+                class="hero-float hero-float-back interactive-media"
+                :class="{ 'vertical-orient-detail': activeBrand.isVertical }"
+                :src="activeBrand.heroDetailImage"
+                :alt="`${activeBrand.label} detail`"
+                role="button"
+                tabindex="0"
+                :aria-label="`View ${activeBrand.label} detail image`"
+                @click="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
+                @keydown.enter.prevent="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
+                @keydown.space.prevent="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
+              />
+              <img
+                class="hero-car interactive-media"
+                :class="{ 'vertical-orient': activeBrand.isVertical }"
+                :src="activeBrand.heroImage"
+                :alt="activeBrand.imageAlt"
+                role="button"
+                tabindex="0"
+                :aria-label="`View ${activeBrand.imageAlt}`"
+                @click="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
+                @keydown.enter.prevent="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
+                @keydown.space.prevent="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
+              />
+              <div class="hero-stat hero-stat-left">
+                <strong>{{ activeBrand.statTitle }}</strong>
+                <span>{{ activeBrand.statText }}</span>
+              </div>
+              <div class="hero-stat hero-stat-right">
+                <strong>{{ activeBrand.sideStatTitle }}</strong>
+                <span>{{ activeBrand.sideStatText }}</span>
+              </div>
+            </div>
+          </Transition>
+        </div>
+
+        <div class="brand-strip" role="tablist" aria-label="Brand gallery">
+          <button
+            v-for="logo in brandLogos"
+            :key="logo.id"
+            class="logo-pill"
+            :class="{ active: logo.id === activeBrandId }"
+            type="button"
+            :aria-pressed="logo.id === activeBrandId"
+            :style="{ '--brand-color': logo.accent }"
+            @click="selectBrand(logo.id)"
+          >
+            <img :src="logo.src" :alt="logo.alt" />
+          </button>
+        </div>
+      </section>
+
+      <section id="stories-intro" class="intro-band">
+        <p class="eyebrow">The Digital Exhibition</p>
+        <div class="intro-layout">
+          <h2>Hành trình xuyên qua những tuyệt tác, nơi công nghệ hội ngộ nghệ thuật cơ khí đầy kịch tính.</h2>
+          <p>
+            Mỗi chương là một trải nghiệm thị giác khác biệt. Chúng tôi sử dụng bố cục magazine cao cấp kết hợp với nhịp chuyển động mượt mà để kể về linh hồn của những cỗ máy tốc độ, thay vì chỉ là những thông số khô khan trên trang giấy.
+          </p>
+        </div>
+      </section>
+
+      <section
+        v-for="(story, index) in stories"
+        :id="story.id"
+        :key="story.id"
+        :ref="(el) => registerStorySection(el, index)"
+        class="story-section"
+        :class="[`align-${story.align}`, mobileStoryPatternClass(index)]"
+        :style="storyTheme(story)"
+      >
+        <div class="story-grid">
+          <article class="story-copy">
+            <p class="section-badge">{{ story.chapter }}</p>
+            <p class="story-brand">{{ story.brand }}</p>
+            <h2 class="story-title">{{ story.model }}</h2>
+            <p class="story-quote">{{ story.headline }}</p>
+            <p class="story-description">{{ story.story }}</p>
+            <p class="story-note">{{ story.note }}</p>
+            <div class="spec-row">
+              <span v-for="spec in story.specs" :key="spec" class="spec-chip">{{ spec }}</span>
+            </div>
+            <button class="text-btn" type="button" @click="scrollToSection(nextSection(index))">
+              {{ index === stories.length - 1 ? 'Go to contact' : 'Next chapter' }}
+            </button>
+          </article>
+
+          <div class="story-media-wrap">
+            <div class="story-media-shell tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
+              <div class="story-light"></div>
+              <div class="story-number">{{ story.serial }}</div>
+              <div
+                class="story-frame secondary interactive-frame"
+                role="button"
+                tabindex="0"
+                :aria-label="`View ${story.brand} detail image`"
+                @click="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
+                @keydown.enter.prevent="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
+                @keydown.space.prevent="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
+              >
+                <img :class="{ 'vertical-orient-story': story.isVertical }" :src="story.secondaryImage" :alt="`${story.brand} detail`" />
+              </div>
+              <div
+                class="story-frame primary interactive-frame"
+                role="button"
+                tabindex="0"
+                :aria-label="`View ${story.brand} ${story.model}`"
+                @click="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
+                @keydown.enter.prevent="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
+                @keydown.space.prevent="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
+              >
+                <img :class="{ 'vertical-orient-story': story.isVertical }" :src="story.image" :alt="`${story.brand} ${story.model}`" />
+              </div>
+              <div class="story-caption">
+                <span>{{ story.caption }}</span>
+                <small>{{ story.mood }}</small>
               </div>
             </div>
           </div>
-        </Transition>
-      </div>
-
-      <div class="hero-visual">
-        <div class="hero-ring ring-one"></div>
-        <div class="hero-ring ring-two"></div>
-        <Transition name="swap-fade" mode="out-in">
-          <div :key="`${activeBrand.id}-visual`" class="hero-visual-panel">
-            <div class="hero-glass-card hero-glass-top">{{ activeBrand.topTag }}</div>
-            <div class="hero-glass-card hero-glass-bottom">{{ activeBrand.bottomTag }}</div>
-            <img
-              class="hero-float hero-float-back interactive-media"
-              :class="{ 'vertical-orient-detail': activeBrand.isVertical }"
-              :src="activeBrand.heroDetailImage"
-              :alt="`${activeBrand.label} detail`"
-              role="button"
-              tabindex="0"
-              :aria-label="`View ${activeBrand.label} detail image`"
-              @click="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
-              @keydown.enter.prevent="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
-              @keydown.space.prevent="openImageViewer({ src: activeBrand.heroDetailImage, alt: `${activeBrand.label} detail`, title: `${activeBrand.label} detail`, meta: 'Click outside or press Escape to close.' })"
-            />
-            <img
-              class="hero-car interactive-media"
-              :class="{ 'vertical-orient': activeBrand.isVertical }"
-              :src="activeBrand.heroImage"
-              :alt="activeBrand.imageAlt"
-              role="button"
-              tabindex="0"
-              :aria-label="`View ${activeBrand.imageAlt}`"
-              @click="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
-              @keydown.enter.prevent="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
-              @keydown.space.prevent="openImageViewer({ src: activeBrand.heroImage, alt: activeBrand.imageAlt, title: activeBrand.imageAlt, meta: 'Click outside or press Escape to close.' })"
-            />
-            <div class="hero-stat hero-stat-left">
-              <strong>{{ activeBrand.statTitle }}</strong>
-              <span>{{ activeBrand.statText }}</span>
-            </div>
-            <div class="hero-stat hero-stat-right">
-              <strong>{{ activeBrand.sideStatTitle }}</strong>
-              <span>{{ activeBrand.sideStatText }}</span>
-            </div>
-          </div>
-        </Transition>
-      </div>
-
-      <div class="brand-strip" role="tablist" aria-label="Brand gallery">
-        <button
-          v-for="logo in brandLogos"
-          :key="logo.id"
-          class="logo-pill"
-          :class="{ active: logo.id === activeBrandId }"
-          type="button"
-          :aria-pressed="logo.id === activeBrandId"
-          :style="{ '--brand-color': logo.accent }"
-          @click="selectBrand(logo.id)"
-        >
-          <img :src="logo.src" :alt="logo.alt" />
-        </button>
-      </div>
-    </section>
-
-    <section id="stories-intro" class="intro-band">
-      <p class="eyebrow">The Digital Exhibition</p>
-      <div class="intro-layout">
-        <h2>Hành trình xuyên qua những tuyệt tác, nơi công nghệ hội ngộ nghệ thuật cơ khí đầy kịch tính.</h2>
-        <p>
-          Mỗi chương là một trải nghiệm thị giác khác biệt. Chúng tôi sử dụng bố cục magazine cao cấp kết hợp với nhịp chuyển động mượt mà để kể về linh hồn của những cỗ máy tốc độ, thay vì chỉ là những thông số khô khan trên trang giấy.
-        </p>
-      </div>
-    </section>
-
-    <section
-      v-for="(story, index) in stories"
-      :id="story.id"
-      :key="story.id"
-      :ref="(el) => registerStorySection(el, index)"
-      class="story-section"
-      :class="[`align-${story.align}`, mobileStoryPatternClass(index)]"
-      :style="storyTheme(story)"
-    >
-      <div class="story-grid">
-        <article class="story-copy">
-          <p class="section-badge">{{ story.chapter }}</p>
-          <p class="story-brand">{{ story.brand }}</p>
-          <h2 class="story-title">{{ story.model }}</h2>
-          <p class="story-quote">{{ story.headline }}</p>
-          <p class="story-description">{{ story.story }}</p>
-          <p class="story-note">{{ story.note }}</p>
-          <div class="spec-row">
-            <span v-for="spec in story.specs" :key="spec" class="spec-chip">{{ spec }}</span>
-          </div>
-          <button class="text-btn" type="button" @click="scrollToSection(nextSection(index))">
-            {{ index === stories.length - 1 ? 'Go to contact' : 'Next chapter' }}
-          </button>
-        </article>
-
-        <div class="story-media-wrap">
-          <div class="story-media-shell tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
-            <div class="story-light"></div>
-            <div class="story-number">{{ story.serial }}</div>
-            <div
-              class="story-frame secondary interactive-frame"
-              role="button"
-              tabindex="0"
-              :aria-label="`View ${story.brand} detail image`"
-              @click="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
-              @keydown.enter.prevent="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
-              @keydown.space.prevent="openImageViewer({ src: story.secondaryImage, alt: `${story.brand} detail`, title: `${story.brand} detail`, meta: story.mood })"
-            >
-              <img :class="{ 'vertical-orient-story': story.isVertical }" :src="story.secondaryImage" :alt="`${story.brand} detail`" />
-            </div>
-            <div
-              class="story-frame primary interactive-frame"
-              role="button"
-              tabindex="0"
-              :aria-label="`View ${story.brand} ${story.model}`"
-              @click="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
-              @keydown.enter.prevent="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
-              @keydown.space.prevent="openImageViewer({ src: story.image, alt: `${story.brand} ${story.model}`, title: `${story.brand} ${story.model}`, meta: story.caption })"
-            >
-              <img :class="{ 'vertical-orient-story': story.isVertical }" :src="story.image" :alt="`${story.brand} ${story.model}`" />
-            </div>
-            <div class="story-caption">
-              <span>{{ story.caption }}</span>
-              <small>{{ story.mood }}</small>
-            </div>
-          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section id="reserve" class="closing-panel tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
-      <div class="closing-copy">
-        <p class="eyebrow">Contact</p>
-        <p class="contact-kicker">Unique, creative UI design and front-end development, shaped around real brand goals.</p>
-        <h2 class="contact-display">Open to projects involving landing pages, websites, portfolios, and product-focused marketing sites.</h2>
-        <p class="contact-lede">
-          If you need a website that feels polished, clear, and aligned with your brand, I can take it from concept
-          to final build.
-        </p>
-        <div class="contact-tags" aria-label="Service details">
-          <span>Freelance projects</span>
-          <span>Remote worldwide</span>
-          <span>Fast revision flow</span>
-        </div>
-        <h2 class="contact-heading">Get in touch</h2>
-        <p class="contact-intro">
-          If you want to discuss a project, build a new landing page, or refine an existing one, feel free to reach
-          out through the channels below.
-        </p>
-        <h2>Strong structure, memorable visuals, and a smooth reading flow are always part of the process.</h2>
-        <p>
-          I can also help replace placeholder content, align the page with your brand system, or push the motion
-          layer further with richer interactions.
-        </p>
-      </div>
-      <div class="contact-layout">
-        <a class="contact-spotlight" href="tel:0981003682">
-          <span class="contact-spotlight-label">Direct line</span>
-          <strong class="contact-spotlight-value">0981 003 682</strong>
-          <p class="contact-spotlight-copy">
-            Quick calls for redesigns, launch polish, and fast fixes.
+      <section id="reserve" class="closing-panel tilt-surface" @mousemove="onTiltMove" @mouseleave="onTiltLeave">
+        <div class="closing-copy">
+          <p class="eyebrow">Contact</p>
+          <p class="contact-kicker">Unique, creative UI design and front-end development, shaped around real brand goals.</p>
+          <h2 class="contact-display">Open to projects involving landing pages, websites, portfolios, and product-focused marketing sites.</h2>
+          <p class="contact-lede">
+            If you need a website that feels polished, clear, and aligned with your brand, I can take it from concept
+            to final build.
           </p>
-          <span class="contact-spotlight-cta">Call to start a project</span>
-        </a>
-        <div class="contact-bento">
-          <div class="contact-detail">
-            <span class="contact-label">Project Fit</span>
-            <strong class="contact-value">Landing pages and brand sites</strong>
-            <span class="contact-meta">Concept to responsive build.</span>
+          <div class="contact-tags" aria-label="Service details">
+            <span>Freelance projects</span>
+            <span>Remote worldwide</span>
+            <span>Fast revision flow</span>
           </div>
-          <div class="contact-detail">
-            <span class="contact-label">Work Style</span>
-            <strong class="contact-value">Clean visuals and quick iteration</strong>
-            <span class="contact-meta">Clear process, practical execution.</span>
+          <h2 class="contact-heading">Get in touch</h2>
+          <p class="contact-intro">
+            If you want to discuss a project, build a new landing page, or refine an existing one, feel free to reach
+            out through the channels below.
+          </p>
+          <h2>Strong structure, memorable visuals, and a smooth reading flow are always part of the process.</h2>
+          <p>
+            I can also help replace placeholder content, align the page with your brand system, or push the motion
+            layer further with richer interactions.
+          </p>
+        </div>
+        <div class="contact-layout">
+          <a class="contact-spotlight" href="tel:0981003682">
+            <span class="contact-spotlight-label">Direct line</span>
+            <strong class="contact-spotlight-value">0981 003 682</strong>
+            <p class="contact-spotlight-copy">
+              Quick calls for redesigns, launch polish, and fast fixes.
+            </p>
+            <span class="contact-spotlight-cta">Call to start a project</span>
+          </a>
+          <div class="contact-bento">
+            <div class="contact-detail">
+              <span class="contact-label">Project Fit</span>
+              <strong class="contact-value">Landing pages and brand sites</strong>
+              <span class="contact-meta">Concept to responsive build.</span>
+            </div>
+            <div class="contact-detail">
+              <span class="contact-label">Work Style</span>
+              <strong class="contact-value">Clean visuals and quick iteration</strong>
+              <span class="contact-meta">Clear process, practical execution.</span>
+            </div>
+            <div class="contact-detail">
+              <span class="contact-label">Availability</span>
+              <strong class="contact-value">Open for selected freelance work</strong>
+              <span class="contact-meta">Short sprints or full redesigns.</span>
+            </div>
+            <div class="contact-detail">
+              <span class="contact-label">Timezone</span>
+              <strong class="contact-value">GMT+7, remote-friendly</strong>
+              <span class="contact-meta">Easy with local and global clients.</span>
+            </div>
           </div>
-          <div class="contact-detail">
-            <span class="contact-label">Availability</span>
-            <strong class="contact-value">Open for selected freelance work</strong>
-            <span class="contact-meta">Short sprints or full redesigns.</span>
+        </div>
+        <div class="contact-grid">
+          <a class="contact-card" href="tel:0981003682">
+            <span class="contact-label">Phone</span>
+            <strong class="contact-value">0981003682</strong>
+          </a>
+          <div class="contact-card">
+            <span class="contact-label">Instagram</span>
+            <strong class="contact-value">...</strong>
           </div>
-          <div class="contact-detail">
-            <span class="contact-label">Timezone</span>
-            <strong class="contact-value">GMT+7, remote-friendly</strong>
-            <span class="contact-meta">Easy with local and global clients.</span>
+          <div class="contact-card">
+            <span class="contact-label">LinkedIn</span>
+            <strong class="contact-value">...</strong>
+          </div>
+          <div class="contact-card">
+            <span class="contact-label">GitHub</span>
+            <strong class="contact-value">...</strong>
+          </div>
+          <div class="contact-card">
+            <span class="contact-label">Upwork</span>
+            <strong class="contact-value">...</strong>
           </div>
         </div>
-      </div>
-      <div class="contact-grid">
-        <a class="contact-card" href="tel:0981003682">
-          <span class="contact-label">Phone</span>
-          <strong class="contact-value">0981003682</strong>
-        </a>
-        <div class="contact-card">
-          <span class="contact-label">Instagram</span>
-          <strong class="contact-value">...</strong>
-        </div>
-        <div class="contact-card">
-          <span class="contact-label">LinkedIn</span>
-          <strong class="contact-value">...</strong>
-        </div>
-        <div class="contact-card">
-          <span class="contact-label">GitHub</span>
-          <strong class="contact-value">...</strong>
-        </div>
-        <div class="contact-card">
-          <span class="contact-label">Upwork</span>
-          <strong class="contact-value">...</strong>
-        </div>
-      </div>
-    </section>
+      </section>
     </div>
 
     <Transition name="lightbox-fade">
@@ -313,6 +317,9 @@ const heroCard = ref(null)
 const storySections = ref([])
 const isMobileMenuOpen = ref(false)
 const selectedImage = ref(null)
+const isDarkMode = ref(false)
+
+const THEME_STORAGE_KEY = 'atelier-drive-theme'
 
 const asset = (path) => `${import.meta.env.BASE_URL}${path}`
 
@@ -449,6 +456,7 @@ const activeBrandId = ref('bmw')
 const activeBrand = computed(
   () => brandLogos.find((brand) => brand.id === activeBrandId.value) ?? brandLogos[0],
 )
+const themeButtonLabel = computed(() => (isDarkMode.value ? 'Switch to light mode' : 'Switch to dark mode'))
 
 const stories = [
   {
@@ -551,7 +559,7 @@ let pointerHandler
 let resizeHandler
 let keydownHandler
 
-const getNavOffset = () => (siteNav.value?.offsetHeight ?? 82) + 28
+const getNavOffset = () => (siteNav.value?.offsetHeight ?? 82) + 62
 
 const registerStorySection = (el, index) => {
   if (el) storySections.value[index] = el
@@ -579,6 +587,14 @@ const toggleMobileMenu = () => {
 
 const selectBrand = (brandId) => {
   activeBrandId.value = brandId
+}
+
+const applyTheme = () => {
+  document.body.dataset.theme = isDarkMode.value ? 'dark' : 'light'
+}
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value
 }
 
 const openImageViewer = (image) => {
@@ -753,6 +769,14 @@ const syncLockedUiState = () => {
 
 onMounted(async () => {
   await nextTick()
+  try {
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
+    if (savedTheme) isDarkMode.value = savedTheme === 'dark'
+    else isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+  } catch {
+    isDarkMode.value = false
+  }
+  applyTheme()
   initLenis()
   initAmbientPointer()
   initAnimations()
@@ -771,6 +795,15 @@ onMounted(async () => {
   window.addEventListener('keydown', keydownHandler)
   window.addEventListener('resize', resizeHandler)
   setTimeout(() => ScrollTrigger.refresh(), 250)
+})
+
+watch(isDarkMode, (dark) => {
+  applyTheme()
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, dark ? 'dark' : 'light')
+  } catch {
+    // Ignore storage limitations and keep the UI responsive.
+  }
 })
 
 watch([isMobileMenuOpen, selectedImage], syncLockedUiState)

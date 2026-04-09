@@ -689,6 +689,8 @@ const mobileStoryPatternClass = (index) => (Math.floor(index / 2) % 2 === 0 ? 'm
 
 const isMobileViewport = () => window.innerWidth <= 820
 
+const isViewSourceShortcut = (event) => (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'u'
+
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
@@ -1043,6 +1045,12 @@ onMounted(async () => {
   initStoryMediaObserver()
   initAnimations()
   keydownHandler = (event) => {
+    if (isViewSourceShortcut(event)) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+
     if (event.key === 'Escape') {
       if (selectedImage.value) {
         closeImageViewer()
@@ -1067,7 +1075,7 @@ onMounted(async () => {
     if (!isMobileViewport()) closeMobileMenu()
     ScrollTrigger.refresh()
   }
-  window.addEventListener('keydown', keydownHandler)
+  window.addEventListener('keydown', keydownHandler, true)
   window.addEventListener('resize', resizeHandler)
   setTimeout(() => ScrollTrigger.refresh(), 250)
 })
@@ -1090,7 +1098,7 @@ watch([isMobileMenuOpen, selectedImage], syncLockedUiState)
 
 onUnmounted(() => {
   main.value?.removeEventListener('pointermove', pointerHandler)
-  window.removeEventListener('keydown', keydownHandler)
+  window.removeEventListener('keydown', keydownHandler, true)
   window.removeEventListener('resize', resizeHandler)
   storyMediaObserver?.disconnect()
   clearBrandWarmup()
